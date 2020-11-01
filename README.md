@@ -2,6 +2,10 @@
 
 Ported to ULX3S using Yosys+ghdl+nextpnr+trellis
 
+It includes support for Bluetooth gamepads using ESP32 software from [this repo](https://github.com/dan-rodrigues/ulx3s-bluetooth-gamepad).
+
+It's assumed that the ESP32 software from the above repo has been flashed before programming with `snes.bit` in this repo. The blue LED on the bottom of the board (D22) will blink until a gamepad is connected, at which point it will remain on.
+
 ## Requirements
  - ULX3S 85k
  - Latest Yosys, ghdl, ghdl-yosys-plugin, nextpnr and Trellis
