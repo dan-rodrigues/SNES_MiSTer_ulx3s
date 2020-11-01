@@ -4,7 +4,13 @@ module top(
 	input [6:0] btn,
 	input [3:0] sw,
 
-	output wifi_gpio0,
+	output wifi_en,
+    output wifi_gpio0,
+    output wifi_gpio12,
+
+    input wifi_gpio4,
+    input wifi_gpio16,
+    input wifi_gpio2,
 
 	output sdram_clk, sdram_cke, sdram_csn, sdram_wen,
 	output sdram_rasn, sdram_casn,
@@ -28,7 +34,6 @@ module top(
 );
 
 	wire reset_in = !btn[0] & btn[1] & btn[2]; // reset: pwr+a+b 
-	assign wifi_gpio0 = 1'b1;
 
 	reg [7:0] reset_ctr = 0;
 	reg reset_25mhz = 1;
@@ -440,18 +445,54 @@ module top(
 
 	// ULX3S to SNES input
 
-	wire [15:0] joy1_buttons;
+	wire [15:0] joy1_buttons = {4'b0, ~esp32_btn};
 
-	assign joy1_buttons[0] = ~btn[1]; // B: FIRE1
-	assign joy1_buttons[1] = ~btn[2]; // Y: FIRE2
-	assign joy1_buttons[2] = 1'b1; // SELECT: unmapped
-	assign joy1_buttons[3] = btn[0]; // START: PWRn
-	assign joy1_buttons[4] = ~btn[3]; // UP
-	assign joy1_buttons[5] = ~btn[4]; // DOWN
-	assign joy1_buttons[6] = ~btn[5]; // LEFT
-	assign joy1_buttons[7] = ~btn[6]; // RIGHT
-	assign joy1_buttons[15:8] = 8'hFF; // AXLR: not mapped, remainder: unused
+    // Debouncer (only needed for ESP32 reset):
 
+    wire esp32_reset;
+
+    debouncer #(
+        .BTN_COUNT(1)
+    ) esp32_reset_debouncer (
+        .clk(clk),
+        .reset(reset),
+
+        .btn(!btn[0]),
+        .level(esp32_reset),
+    );
+
+	// SPI gamepad reader:
+	
+    // Inputs:
+
+    reg [2:0] esp_sync_ff [0:1];
+
+    wire esp_spi_mosi = esp_sync_ff[1][2];
+    wire esp_spi_clk = esp_sync_ff[1][1];
+    wire esp_spi_csn = esp_sync_ff[1][0];
+
+    always @(posedge clk) begin
+        esp_sync_ff[1] <= esp_sync_ff[0];
+        esp_sync_ff[0] <= {wifi_gpio4, wifi_gpio16, wifi_gpio2};
+    end
+
+    wire [11:0] esp32_btn;
+
+    esp32_spi_gamepad esp32_spi_gamepad(
+        .clk(clk),
+        .reset(reset),
+
+        .user_reset(esp32_reset),
+        .esp32_en(wifi_en),
+        .esp32_gpio0(wifi_gpio0),
+        .esp32_gpio12(wifi_gpio12),
+
+        .spi_csn(esp_spi_csn),
+        .spi_clk(esp_spi_clk),
+        .spi_mosi(esp_spi_mosi),
+
+        .pad_btn(esp32_btn)
+    );
 
 	reg [15:0] joy1_shift = 16'hFFFF;
 	assign JOY1_DI = {1'b1, joy1_shift[0]};

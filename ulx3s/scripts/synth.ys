@@ -1,4 +1,4 @@
-read_verilog ../mem/dp16k_wrapper.v ../mem/dpram_verilog.v ../mem/dpram_dif_ppu.v ../mem/sprom_verilog.v
+read_verilog ../mem/dp16k_wrapper.v ../mem/dpram_verilog.v ../mem/dpram_dif_ppu.v ../mem/sprom_verilog.v ../top/esp32_spi_gamepad.v ../top/debouncer.v
 ghdl --ieee=synopsys -fexplicit -frelaxed-rules --std=08 \
 	../../src/65C816/P65816_pkg.vhd ../../src/65C816/BCDAdder.vhd ../../src/65C816/AddrGen.vhd ../../src/65C816/AddSubBCD.vhd ../../src/65C816/ALU.vhd ../../src/65C816/MCode.vhd ../../src/65C816/P65C816.vhd \
 	../../src/SPC700/SPC700_pkg.vhd ../../src/SPC700/BCDAdj.vhd ../../src/SPC700/AddrGen.vhd ../../src/SPC700/AddSub.vhd ../../src/SPC700/ALU.vhd ../../src/SPC700/MCode.vhd ../../src/SPC700/MulDiv.vhd ../../src/SPC700/SPC700.vhd \
