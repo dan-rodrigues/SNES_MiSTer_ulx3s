@@ -454,8 +454,8 @@ module top(
     debouncer #(
         .BTN_COUNT(1)
     ) esp32_reset_debouncer (
-        .clk(clk),
-        .reset(reset),
+        .clk(clk_sys),
+        .reset(snes_reset),
 
         .btn(!btn[0]),
         .level(esp32_reset),
@@ -471,7 +471,7 @@ module top(
     wire esp_spi_clk = esp_sync_ff[1][1];
     wire esp_spi_csn = esp_sync_ff[1][0];
 
-    always @(posedge clk) begin
+    always @(posedge clk_sys) begin
         esp_sync_ff[1] <= esp_sync_ff[0];
         esp_sync_ff[0] <= {wifi_gpio4, wifi_gpio16, wifi_gpio2};
     end
@@ -479,8 +479,8 @@ module top(
     wire [11:0] esp32_btn;
 
     esp32_spi_gamepad esp32_spi_gamepad(
-        .clk(clk),
-        .reset(reset),
+        .clk(clk_sys),
+        .reset(snes_reset),
 
         .user_reset(esp32_reset),
         .esp32_en(wifi_en),
